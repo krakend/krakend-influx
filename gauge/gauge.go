@@ -3,8 +3,8 @@ package gauge
 import (
 	"time"
 
-	"github.com/devopsfaith/krakend/logging"
 	"github.com/influxdata/influxdb/client/v2"
+	"github.com/luraproject/lura/logging"
 )
 
 func Points(hostname string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
