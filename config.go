@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/devopsfaith/krakend/config"
+	"github.com/luraproject/lura/config"
 )
 
 const defaultBufferSize = 0

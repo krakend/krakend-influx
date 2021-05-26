@@ -6,13 +6,13 @@ import (
 	"time"
 
 	ginmetrics "github.com/devopsfaith/krakend-metrics/gin"
-	"github.com/devopsfaith/krakend/config"
-	"github.com/devopsfaith/krakend/logging"
 	"github.com/influxdata/influxdb/client/v2"
+	"github.com/luraproject/lura/config"
+	"github.com/luraproject/lura/logging"
 
-	"github.com/letgoapp/krakend-influx/counter"
-	"github.com/letgoapp/krakend-influx/gauge"
-	"github.com/letgoapp/krakend-influx/histogram"
+	"github.com/devopsfaith/krakend-influx/counter"
+	"github.com/devopsfaith/krakend-influx/gauge"
+	"github.com/devopsfaith/krakend-influx/histogram"
 )
 
 const Namespace = "github_com/letgoapp/krakend-influx"
