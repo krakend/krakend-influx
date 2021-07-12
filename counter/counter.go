@@ -16,10 +16,10 @@ var (
 	mu                = new(sync.Mutex)
 )
 
-func Points(hostname string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
-	points := requestPoints(hostname, now, counters, logger)
-	points = append(points, responsePoints(hostname, now, counters, logger)...)
-	points = append(points, connectionPoints(hostname, now, counters, logger)...)
+func Points(tags map[string]string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
+	points := requestPoints(tags, now, counters, logger)
+	points = append(points, responsePoints(tags, now, counters, logger)...)
+	points = append(points, connectionPoints(tags, now, counters, logger)...)
 	return points
 }
 
@@ -31,7 +31,7 @@ var (
 	responseCounterRegexp  = regexp.MustCompile(responseCounterPattern)
 )
 
-func requestPoints(hostname string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
+func requestPoints(tags map[string]string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
 	res := []*client.Point{}
 	mu.Lock()
 	for k, count := range counters {
@@ -39,13 +39,11 @@ func requestPoints(hostname string, now time.Time, counters map[string]int64, lo
 			continue
 		}
 		params := requestCounterRegexp.FindAllStringSubmatch(k, -1)[0][1:]
-		tags := map[string]string{
-			"host":     hostname,
-			"layer":    params[0],
-			"name":     params[1],
-			"complete": params[2],
-			"error":    params[3],
-		}
+		tags["layer"] = params[0]
+		tags["name"] = params[1]
+		tags["complete"] = params[2]
+		tags["error"] = params[3]
+
 		last, ok := lastRequestCount[strings.Join(params, ".")]
 		if !ok {
 			last = 0
@@ -67,7 +65,7 @@ func requestPoints(hostname string, now time.Time, counters map[string]int64, lo
 	return res
 }
 
-func responsePoints(hostname string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
+func responsePoints(tags map[string]string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
 	res := []*client.Point{}
 	mu.Lock()
 	for k, count := range counters {
@@ -75,11 +73,8 @@ func responsePoints(hostname string, now time.Time, counters map[string]int64, l
 			continue
 		}
 		params := responseCounterRegexp.FindAllStringSubmatch(k, -1)[0][1:]
-		tags := map[string]string{
-			"host":   hostname,
-			"name":   params[0],
-			"status": params[1],
-		}
+		tags["name"] = params[0]
+		tags["status"] = params[1]
 		last, ok := lastResponseCount[strings.Join(params, ".")]
 		if !ok {
 			last = 0
@@ -101,14 +96,15 @@ func responsePoints(hostname string, now time.Time, counters map[string]int64, l
 	return res
 }
 
-func connectionPoints(hostname string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
+func connectionPoints(tags map[string]string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {
 	res := make([]*client.Point, 2)
 
 	in := map[string]interface{}{
 		"current": int(counters["krakend.router.connected"]),
 		"total":   int(counters["krakend.router.connected-total"]),
 	}
-	incoming, err := client.NewPoint("router", map[string]string{"host": hostname, "direction": "in"}, in, now)
+	tags["direction"] = "in"
+	incoming, err := client.NewPoint("router", tags, in, now)
 	if err != nil {
 		logger.Error("creating incoming connection counters point:", err.Error())
 		return res
@@ -119,7 +115,8 @@ func connectionPoints(hostname string, now time.Time, counters map[string]int64,
 		"current": int(counters["krakend.router.disconnected"]),
 		"total":   int(counters["krakend.router.disconnected-total"]),
 	}
-	outgoing, err := client.NewPoint("router", map[string]string{"host": hostname, "direction": "out"}, out, now)
+	tags["direction"] = "out"
+	outgoing, err := client.NewPoint("router", tags, out, now)
 	if err != nil {
 		logger.Error("creating outgoing connection counters point:", err.Error())
 		return res

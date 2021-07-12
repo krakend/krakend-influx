@@ -16,6 +16,7 @@ type influxConfig struct {
 	ttl        time.Duration
 	database   string
 	bufferSize int
+	tags       map[string]string
 }
 
 func configGetter(extraConfig config.ExtraConfig) interface{} {
@@ -67,6 +68,16 @@ func configGetter(extraConfig config.ExtraConfig) interface{} {
 		cfg.database = value.(string)
 	} else {
 		cfg.database = "krakend"
+	}
+
+	if value, ok := castedConfig["tags"]; ok {
+		tags := map[string]string{}
+		if tmp, ok := value.(map[string]interface{}); ok {
+			for k, v := range tmp {
+				tags[k] = v.(string)
+			}
+		}
+		cfg.tags = tags
 	}
 
 	return cfg

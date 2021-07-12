@@ -23,6 +23,7 @@ type clientWrapper struct {
 	logger       logging.Logger
 	db           string
 	buf          *Buffer
+	tags         map[string]string
 }
 
 func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *ginmetrics.Metrics, logger logging.Logger) error {
@@ -55,12 +56,19 @@ func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *
 
 	t := time.NewTicker(cfg.ttl)
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		logger.Error("influxdb resolving the local hostname:", err.Error())
+	}
+	cfg.tags["hostname"] = hostname
+
 	cw := clientWrapper{
 		influxClient: influxdbClient,
 		collector:    metricsCollector,
 		logger:       logger,
 		db:           cfg.database,
 		buf:          NewBuffer(cfg.bufferSize),
+		tags:         cfg.tags,
 	}
 
 	go cw.keepUpdated(ctx, t.C)
@@ -71,10 +79,6 @@ func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *
 }
 
 func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		cw.logger.Error("influxdb resolving the local hostname:", err.Error())
-	}
 	for {
 		select {
 		case <-ticker:
@@ -97,15 +101,15 @@ func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time
 		})
 		now := time.Unix(0, snapshot.Time)
 
-		for _, p := range counter.Points(hostname, now, snapshot.Counters, cw.logger) {
+		for _, p := range counter.Points(cw.tags, now, snapshot.Counters, cw.logger) {
 			bp.AddPoint(p)
 		}
 
-		for _, p := range gauge.Points(hostname, now, snapshot.Gauges, cw.logger) {
+		for _, p := range gauge.Points(cw.tags, now, snapshot.Gauges, cw.logger) {
 			bp.AddPoint(p)
 		}
 
-		for _, p := range histogram.Points(hostname, now, snapshot.Histograms, cw.logger) {
+		for _, p := range histogram.Points(cw.tags, now, snapshot.Histograms, cw.logger) {
 			bp.AddPoint(p)
 		}
 

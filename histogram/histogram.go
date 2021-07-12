@@ -9,13 +9,13 @@ import (
 	"github.com/luraproject/lura/logging"
 )
 
-func Points(hostname string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
-	points := latencyPoints(hostname, now, histograms, logger)
-	points = append(points, routerPoints(hostname, now, histograms, logger)...)
-	if p := debugPoint(hostname, now, histograms, logger); p != nil {
+func Points(tags map[string]string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
+	points := latencyPoints(tags, now, histograms, logger)
+	points = append(points, routerPoints(tags, now, histograms, logger)...)
+	if p := debugPoint(tags, now, histograms, logger); p != nil {
 		points = append(points, p)
 	}
-	if p := runtimePoint(hostname, now, histograms, logger); p != nil {
+	if p := runtimePoint(tags, now, histograms, logger); p != nil {
 		points = append(points, p)
 	}
 	return points
@@ -29,7 +29,7 @@ var (
 	routerRegexp  = regexp.MustCompile(routerPattern)
 )
 
-func latencyPoints(hostname string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
+func latencyPoints(tags map[string]string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
 	res := []*client.Point{}
 	for k, histogram := range histograms {
 		if !latencyRegexp.MatchString(k) {
@@ -41,13 +41,10 @@ func latencyPoints(hostname string, now time.Time, histograms map[string]metrics
 		}
 
 		params := latencyRegexp.FindAllStringSubmatch(k, -1)[0][1:]
-		tags := map[string]string{
-			"host":     hostname,
-			"layer":    params[0],
-			"name":     params[1],
-			"complete": params[2],
-			"error":    params[3],
-		}
+		tags["layer"] = params[0]
+		tags["name"] = params[1]
+		tags["complete"] = params[2]
+		tags["error"] = params[3]
 
 		histogramPoint, err := client.NewPoint("requests", tags, newFields(histogram), now)
 		if err != nil {
@@ -59,7 +56,7 @@ func latencyPoints(hostname string, now time.Time, histograms map[string]metrics
 	return res
 }
 
-func routerPoints(hostname string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
+func routerPoints(tags map[string]string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
 	res := []*client.Point{}
 	for k, histogram := range histograms {
 		if !routerRegexp.MatchString(k) {
@@ -71,10 +68,7 @@ func routerPoints(hostname string, now time.Time, histograms map[string]metrics.
 		}
 
 		params := routerRegexp.FindAllStringSubmatch(k, -1)[0][1:]
-		tags := map[string]string{
-			"host": hostname,
-			"name": params[0],
-		}
+		tags["name"] = params[0]
 
 		histogramPoint, err := client.NewPoint("router.response-"+params[1], tags, newFields(histogram), now)
 		if err != nil {
@@ -86,13 +80,10 @@ func routerPoints(hostname string, now time.Time, histograms map[string]metrics.
 	return res
 }
 
-func debugPoint(hostname string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) *client.Point {
+func debugPoint(tags map[string]string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) *client.Point {
 	hd, ok := histograms["krakend.service.debug.GCStats.Pause"]
 	if !ok {
 		return nil
-	}
-	tags := map[string]string{
-		"host": hostname,
 	}
 
 	histogramPoint, err := client.NewPoint("service.debug.GCStats.Pause", tags, newFields(hd), now)
@@ -103,13 +94,10 @@ func debugPoint(hostname string, now time.Time, histograms map[string]metrics.Hi
 	return histogramPoint
 }
 
-func runtimePoint(hostname string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) *client.Point {
+func runtimePoint(tags map[string]string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) *client.Point {
 	hd, ok := histograms["krakend.service.runtime.MemStats.PauseNs"]
 	if !ok {
 		return nil
-	}
-	tags := map[string]string{
-		"host": hostname,
 	}
 
 	histogramPoint, err := client.NewPoint("service.runtime.MemStats.PauseNs", tags, newFields(hd), now)
