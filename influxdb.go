@@ -127,6 +127,11 @@ func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time
 			Database:  cw.db,
 			Precision: "s",
 		})
+		
+		if len(pts) < 1 {
+			continue
+		}
+		
 		retryBatch.AddPoints(pts)
 
 		if err := cw.influxClient.Write(retryBatch); err != nil {
