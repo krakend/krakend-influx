@@ -16,6 +16,7 @@ import (
 )
 
 const Namespace = "github_com/letgoapp/krakend-influx"
+const logPrefix = "[SERVICE: Influx]"
 
 type clientWrapper struct {
 	influxClient client.Client
@@ -26,12 +27,12 @@ type clientWrapper struct {
 }
 
 func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *ginmetrics.Metrics, logger logging.Logger) error {
-	logger.Debug("creating a new influxdb client")
 	cfg, ok := configGetter(extraConfig).(influxConfig)
 	if !ok {
-		logger.Debug("no config for the influxdb client. Aborting")
 		return errNoConfig
 	}
+
+	logger.Debug(logPrefix, "Creating client")
 
 	influxdbClient, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr:     cfg.address,
@@ -40,17 +41,17 @@ func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *
 		Timeout:  10 * time.Second,
 	})
 	if err != nil {
-		logger.Debug("influxdb client crashed")
+		logger.Error(logPrefix, "Client crashed:", err)
 		return err
 	}
 
 	go func() {
 		pingDuration, pingMsg, err := influxdbClient.Ping(time.Second)
 		if err != nil {
-			logger.Error("unable to ping the influx server:", err.Error())
+			logger.Warning(logPrefix, "Unable to ping the InfluxDB server:", err.Error())
 			return
 		}
-		logger.Debug("influx ping results: duration =", pingDuration, "msg =", pingMsg)
+		logger.Debug(logPrefix, "Ping results: duration =", pingDuration, "msg =", pingMsg)
 	}()
 
 	t := time.NewTicker(cfg.ttl)
@@ -65,7 +66,7 @@ func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *
 
 	go cw.keepUpdated(ctx, t.C)
 
-	logger.Debug("influxdb client up and running")
+	logger.Debug(logPrefix, "Client up and running")
 
 	return nil
 }
@@ -82,12 +83,12 @@ func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time
 			return
 		}
 
-		cw.logger.Debug("Preparing influxdb points")
+		cw.logger.Debug(logPrefix, "Preparing data points to send")
 
 		snapshot := cw.collector.Snapshot()
 
 		if shouldSendPoints := len(snapshot.Counters) > 0 || len(snapshot.Gauges) > 0; !shouldSendPoints {
-			cw.logger.Debug("no metrics to send to influx")
+			cw.logger.Debug(logPrefix, "No metrics to send")
 			continue
 		}
 
@@ -110,12 +111,12 @@ func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time
 		}
 
 		if err := cw.influxClient.Write(bp); err != nil {
-			cw.logger.Error("writing to influx:", err.Error())
+			cw.logger.Error(logPrefix, "Couldn't write to server:", err.Error())
 			cw.buf.Add(bp)
 			continue
 		}
 
-		cw.logger.Info(len(bp.Points()), "datapoints sent to Influx")
+		cw.logger.Debug(logPrefix, len(bp.Points()), "datapoints sent")
 
 		pts := []*client.Point{}
 		bpPending := cw.buf.Elements()
@@ -130,11 +131,11 @@ func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time
 			Database:  cw.db,
 			Precision: "s",
 		})
-		
+
 		retryBatch.AddPoints(pts)
 
 		if err := cw.influxClient.Write(retryBatch); err != nil {
-			cw.logger.Error("writting to influx:", err.Error())
+			cw.logger.Error(logPrefix, "Couldn't write to server:", err.Error())
 			cw.buf.Add(bpPending...)
 			continue
 		}
