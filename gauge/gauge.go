@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/luraproject/lura/logging"
+	"github.com/luraproject/lura/v2/logging"
 )
 
 func Points(hostname string, now time.Time, counters map[string]int64, logger logging.Logger) []*client.Point {

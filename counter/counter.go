@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/luraproject/lura/logging"
+	"github.com/luraproject/lura/v2/logging"
 )
 
 var (
