@@ -29,7 +29,7 @@ type clientWrapper struct {
 func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *ginmetrics.Metrics, logger logging.Logger) error {
 	cfg, ok := configGetter(extraConfig).(influxConfig)
 	if !ok {
-		return errNoConfig
+		return ErrNoConfig
 	}
 
 	logger.Debug(logPrefix, "Creating client")
