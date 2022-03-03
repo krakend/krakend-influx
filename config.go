@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/luraproject/lura/config"
+	"github.com/luraproject/lura/v2/config"
 )
 
 const defaultBufferSize = 0
@@ -72,4 +72,4 @@ func configGetter(extraConfig config.ExtraConfig) interface{} {
 	return cfg
 }
 
-var errNoConfig = errors.New("influxdb: unable to load custom config")
+var ErrNoConfig = errors.New("influxdb: unable to load custom config")

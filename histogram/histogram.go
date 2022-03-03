@@ -4,9 +4,9 @@ import (
 	"regexp"
 	"time"
 
-	metrics "github.com/devopsfaith/krakend-metrics"
+	metrics "github.com/devopsfaith/krakend-metrics/v2"
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/luraproject/lura/logging"
+	"github.com/luraproject/lura/v2/logging"
 )
 
 func Points(hostname string, now time.Time, histograms map[string]metrics.HistogramData, logger logging.Logger) []*client.Point {
