@@ -7,8 +7,6 @@ import (
 	"github.com/luraproject/lura/v2/config"
 )
 
-const defaultBufferSize = 0
-
 type influxConfig struct {
 	address    string
 	username   string
