@@ -1,4 +1,4 @@
-module github.com/devopsfaith/krakend-influx/v2
+module github.com/krakendio/krakend-influx/v2
 
 go 1.17
 
