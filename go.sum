@@ -78,7 +78,7 @@ github.com/krakendio/krakend-metrics/v2 v2.0.0-20211021115637-300fc4242500 h1:09
 github.com/krakendio/krakend-metrics/v2 v2.0.0-20211021115637-300fc4242500/go.mod h1:cZS0Raa8rXPb9JqMMWHbmUAB7tac5I5zcz9U6Es2TeU=
 github.com/krakendio/krakend-metrics/v2 v2.0.0 h1:AEDq6ei3OOQUhPbDICPKgIN1j7voSbgDpvjTDvp25vg=
 github.com/krakendio/krakend-metrics/v2 v2.0.0/go.mod h1:frb+WWMKCyKCtYYkXlgYUVyUbieMy6FVSFD31f/7dyY=
-github.com/devopsfaith/krakend-viper/v2 v2.0.0-20211020152843-fef58b415f68/go.mod h1:9ng5WbNPGzQkKuBfm9gceddqg9Drdm9jWz7UwykoSv4=
+github.com/krakendio/krakend-viper/v2 v2.0.0-20211020152843-fef58b415f68/go.mod h1:9ng5WbNPGzQkKuBfm9gceddqg9Drdm9jWz7UwykoSv4=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-bitstream v0.0.0-20180413035011-3522498ce2c8/go.mod h1:VMaSuZ+SZcx/wljOQKvp5srsbCiKDEb6K2wC4+PiBmQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
