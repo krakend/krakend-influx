@@ -3,7 +3,7 @@ module github.com/krakendio/krakend-influx/v2
 go 1.17
 
 require (
-	github.com/devopsfaith/krakend-metrics/v2 v2.0.0
+	github.com/krakendio/krakend-metrics/v2 v2.0.0
 	github.com/influxdata/influxdb v1.9.6
 	github.com/luraproject/lura/v2 v2.0.0
 )

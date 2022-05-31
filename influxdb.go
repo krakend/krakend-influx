@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	ginmetrics "github.com/devopsfaith/krakend-metrics/v2/gin"
 	"github.com/influxdata/influxdb/client/v2"
+	ginmetrics "github.com/krakendio/krakend-metrics/v2/gin"
 	"github.com/luraproject/lura/v2/config"
 	"github.com/luraproject/lura/v2/logging"
 
