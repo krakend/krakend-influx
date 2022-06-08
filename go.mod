@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/influxdata/influxdb v1.9.7
-	github.com/krakendio/krakend-metrics/v2 v2.0.0-20220603221748-5a72f8d18496
-	github.com/luraproject/lura/v2 v2.0.0-20220601150625-abb94fb9730d
+	github.com/krakendio/krakend-metrics/v2 v2.0.1
+	github.com/luraproject/lura/v2 v2.0.5
 )
 
 require (
@@ -16,7 +16,7 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/krakendio/flatmap v0.0.0-20220531185225-4cb0ad6fbedd // indirect
+	github.com/krakendio/flatmap v1.1.1 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
