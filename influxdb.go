@@ -16,7 +16,7 @@ import (
 )
 
 const Namespace = "github_com/letgoapp/krakend-influx"
-const logPrefix = "[SERVICE: Influx]"
+const logPrefix = "[SERVICE: InfluxDB]"
 
 type clientWrapper struct {
 	influxClient client.Client
