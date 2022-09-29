@@ -16,58 +16,51 @@ type influxConfig struct {
 	bufferSize int
 }
 
-func configGetter(extraConfig config.ExtraConfig) interface{} {
-	value, ok := extraConfig[Namespace]
+func configGetter(extraConfig config.ExtraConfig) (influxConfig, error) {
+	cfg := influxConfig{
+		ttl:      time.Minute,
+		database: "krakend",
+	}
+
+	castedConfig, ok := extraConfig[Namespace].(map[string]interface{})
 	if !ok {
-		return nil
+		return cfg, ErrNoConfig
 	}
 
-	castedConfig, ok := value.(map[string]interface{})
-	if !ok {
-		return nil
+	if value, ok := castedConfig["address"].(string); ok {
+		cfg.address = value
+	} else {
+		return cfg, errNoAddress
 	}
 
-	cfg := influxConfig{}
-
-	if value, ok := castedConfig["address"]; ok {
-		cfg.address = value.(string)
+	if value, ok := castedConfig["username"].(string); ok {
+		cfg.username = value
 	}
 
-	if value, ok := castedConfig["username"]; ok {
-		cfg.username = value.(string)
+	if value, ok := castedConfig["password"].(string); ok {
+		cfg.password = value
 	}
 
-	if value, ok := castedConfig["password"]; ok {
-		cfg.password = value.(string)
+	if value, ok := castedConfig["buffer_size"].(int); ok {
+		cfg.bufferSize = value
 	}
 
-	if value, ok := castedConfig["buffer_size"]; ok {
-		if s, ok := value.(int); ok {
-			cfg.bufferSize = s
-		}
-	}
-
-	if value, ok := castedConfig["ttl"]; ok {
-		s, ok := value.(string)
-
-		if !ok {
-			return nil
-		}
-		var err error
-		cfg.ttl, err = time.ParseDuration(s)
+	if value, ok := castedConfig["ttl"].(string); ok {
+		ttl, err := time.ParseDuration(value)
 
 		if err != nil {
-			return nil
+			return cfg, err
 		}
+
+		cfg.ttl = ttl
 	}
 
-	if value, ok := castedConfig["db"]; ok {
-		cfg.database = value.(string)
-	} else {
-		cfg.database = "krakend"
+	if value, ok := castedConfig["db"].(string); ok {
+		cfg.database = value
 	}
 
-	return cfg
+	return cfg, nil
 }
 
-var ErrNoConfig = errors.New("influxdb: unable to load custom config")
+var ErrNoConfig = errors.New("unable to load custom config")
+var errNoAddress = errors.New("address is required")

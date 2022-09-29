@@ -27,9 +27,12 @@ type clientWrapper struct {
 }
 
 func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *ginmetrics.Metrics, logger logging.Logger) error {
-	cfg, ok := configGetter(extraConfig).(influxConfig)
-	if !ok {
-		return ErrNoConfig
+	cfg, err := configGetter(extraConfig)
+	if err != nil {
+		if err != ErrNoConfig {
+			logger.Error(logPrefix, "Parsing the configuration:", err.Error())
+		}
+		return err
 	}
 
 	logger.Debug(logPrefix, "Creating client")
@@ -74,7 +77,7 @@ func New(ctx context.Context, extraConfig config.ExtraConfig, metricsCollector *
 func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		cw.logger.Error("influxdb resolving the local hostname:", err.Error())
+		cw.logger.Error(logPrefix, "Resolving the local hostname:", err.Error())
 	}
 	for {
 		select {
@@ -87,7 +90,7 @@ func (cw clientWrapper) keepUpdated(ctx context.Context, ticker <-chan time.Time
 
 		snapshot := cw.collector.Snapshot()
 
-		if shouldSendPoints := len(snapshot.Counters) > 0 || len(snapshot.Gauges) > 0; !shouldSendPoints {
+		if len(snapshot.Counters) == 0 && len(snapshot.Gauges) == 0 {
 			cw.logger.Debug(logPrefix, "No metrics to send")
 			continue
 		}
