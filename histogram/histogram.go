@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/influxdata/influxdb/client/v2"
-	metrics "github.com/krakendio/krakend-metrics/v2"
+	metrics "github.com/krakend/krakend-metrics/v2"
 	"github.com/luraproject/lura/v2/logging"
 )
 
