@@ -1,3 +1,5 @@
+# THIS COMPONENT IS DEPRECATED AND IS NOT MAINTAINED ANYMORE
+
 ## Local dev
 
 Start the influx container
